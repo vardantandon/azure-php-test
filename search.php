@@ -1,6 +1,6 @@
 <html>
 <head>
-<Title>Registration Form</Title>
+<Title>Search</Title>
 <style type="text/css">
     body { background-color: #fff; border-top: solid 10px #000;
         color: #333; font-size: .85em; margin: 20; padding: 20;
@@ -17,14 +17,16 @@
 </head>
 <body>
 <h1>Register here!</h1>
-<p>Fill in your name , email address and Company Name then click <strong>Submit</strong> to register.</p>
-<form method="post" action="index.php" enctype="multipart/form-data" >
-      Name  <input type="text" name="name" id="name"/></br>
-      Email <input type="text" name="email" id="email"/></br>
-      Company Name<input type="text" name="company" id="company"/></br>
-      <input type="submit" name="submit" value="Submit" />
+<p>Type the name or email or company name then click <strong>Search</strong> to search.</p>
+<form method="get" action="search.php" enctype="multipart/form-data" >
+      
+      search by name :<input type="text" name="name" id="searchname"/></br>
+      search by email :<input type="text" name="email" id="searchemail"/></br>
+      search by company :<input type="text" name="company" id="searchcompany"/></br>
+      <input type="submit" name="search" value="Search Database" />
 </form>
 <?php
+   
     // DB connection info
     //TODO: Update the values for $host, $user, $pwd, and $db
     //using the values you retrieved earlier from the portal.
@@ -32,6 +34,7 @@
     $user = "b089d5af601690";
     $pwd = "b9b1d523";
     $db = "randomrApgTD6hW1";
+    $found = False;
     // Connect to database.
     try {
         $conn = new PDO( "mysql:host=$host;dbname=$db", $user, $pwd);
@@ -41,33 +44,29 @@
         die(var_dump($e));
     }
     // Insert registration info
-    if(!empty($_POST)) {
+    if(!empty($_GET)) {
     try {
-        $name = $_POST['name'];
-        $email = $_POST['email'];
-        $date = date("Y-m-d");
-        $company = $_POST['company'];
-        // Insert data
-        $sql_insert = "INSERT INTO registration_tbl (name, email, date,company) 
-                   VALUES (?,?,?,?)";
-        $stmt = $conn->prepare($sql_insert);
-        $stmt->bindValue(1, $name);
-        $stmt->bindValue(2, $email);
-        $stmt->bindValue(3, $date);
-        $stmt->bindValue(4, $company);
-        $stmt->execute();
+        $name = $_GET['name'];
+        $email = $_GET['email'];
+        $company = $_GET['company'];
+        $found = true; 
+        
     }
     catch(Exception $e) {
         die(var_dump($e));
     }
-    echo "<h3>Your're registered!</h3>";
+    echo "<h3>Thank You for searching</h3>";
     }
     // Retrieve data
-    $sql_select = "SELECT * FROM registration_tbl";
+    if ($found == true){
+    $sql_select = "SELECT * FROM registration_tbl Where 
+    name like '%$name%' AND 
+    email like '%$email%' AND
+    company like '%$company%' ";
     $stmt = $conn->query($sql_select);
     $registrants = $stmt->fetchAll(); 
     if(count($registrants) > 0) {
-        echo "<h2>People who are registered:</h2>";
+        echo "<h2>People You searched For : </h2>";
         echo "<table>";
         echo "<tr><th>Name</th>";
         echo "<th>Email</th>";
@@ -81,8 +80,13 @@
         }
         echo "</table>";
     } else {
-        echo "<h3>No one is currently registered.</h3>";
+        echo "<h3>Not Found !!!</h3>";
     }
+}
+else {
+    echo "Waiting..." ; 
+}
 ?>
+
 </body>
 </html>
